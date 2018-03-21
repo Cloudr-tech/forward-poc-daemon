@@ -8,7 +8,16 @@ var ip = require('ip');
 var fs = require('fs');
 var os = require('os');
 var api = process.env.API || "http://api.cloudr.tech";
+var config = {
+	storageLeft: 10000000000
+};
 
+try {
+	config = require("./config.json");
+}
+catch (err) {
+	console.log("Unable to load configuration\nStarting with default settings");
+}
 
 app.use(cors());
 app.use(bodyParser.urlencoded({extended:true}));
@@ -71,28 +80,11 @@ app.use(function (req, res) {
 
 app.listen(port);
 
-axios.put(api + '/daemons', {
-	hostname : os.hostname(),
-	ip : ip.address(),
-	storageLeft : 20000000000
-}).then(function (res) {
-	if (res.data.status == false) {
-		console.log("Daemon already registered");
-	} else {
-		console.log("Registered successfully as " + os.hostname() + " with ip " + ip.address());
-	}
-}).catch(function (err) {
-	console.log("Error during communication with api");
-	console.log(err);
-	process.exit(1);
-})
-
-
-setInterval(function () {
+function keepAlive() {
 	axios.patch(api + '/daemons', {
 		hostname : os.hostname(),
 		ip : ip.address(),
-		storageLeft : 20000000000
+		storageLeft : config.storageLeft
 	}).then(function (res) {
 		if (res.data.status == false) {
 			console.log("Error: " + res.data.message);
@@ -104,6 +96,25 @@ setInterval(function () {
 		console.log(err);
 		process.exit(1);
 	});
-}, 5000)
+}
+
+axios.put(api + '/daemons', {
+	hostname : os.hostname(),
+	ip : ip.address(),
+	storageLeft : config.storageLeft
+}).then(function (res) {
+	if (res.data.status == false) {
+		console.log("Daemon already registered");
+	} else {
+		console.log("Registered successfully as " + os.hostname() + " with ip " + ip.address());
+	}
+	keepAlive();
+	setInterval(keepAlive, 5000);
+}).catch(function (err) {
+	console.log("Error during communication with api");
+	console.log(err);
+	process.exit(1);
+});
+
 
 console.log('daemon started on 4242');
