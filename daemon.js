@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 var ip = require('ip');
 var fs = require('fs');
 var os = require('os');
-var api = process.env.API || "https://cloudr-api.marmus.me";
+var api = process.env.API || "http://api.cloudr.tech";
 var config = {
 	storageLeft: 10000000000
 };
