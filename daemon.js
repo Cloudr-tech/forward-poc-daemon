@@ -7,7 +7,7 @@ var bodyParser = require('body-parser');
 var ip = require('ip');
 var fs = require('fs');
 var os = require('os');
-var api = process.env.API || "http://api.cloudr.tech";
+var api = process.env.API || "https://cloudr-api.marmus.me";
 var config = {
 	storageLeft: 10000000000
 };
@@ -65,8 +65,14 @@ app.route('/download/:id').get(function (req, res) {
 				status: false,
 				message: "Error saving file \"" + req.body.name + "\""
 			});
-		else
-			res.json({status: true, message:"OK", data: str2ab(data)});
+		else {
+			const dataToSend = [];
+			var intArray = new Int8Array(str2ab(data));
+			for (let item in intArray) {
+				dataToSend.push(intArray[item]);
+			}
+			res.json({status: true, message:"OK", data: dataToSend});
+		}
 
 	});
 });
