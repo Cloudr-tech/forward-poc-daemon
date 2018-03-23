@@ -87,6 +87,7 @@ app.use(function (req, res) {
 app.listen(port);
 
 function keepAlive() {
+    if (ip.address() != "127.0.0.1") {
 	axios.patch(api + '/daemons', {
 		hostname : os.hostname(),
 		ip : ip.address(),
@@ -102,6 +103,7 @@ function keepAlive() {
 		console.log(err);
 		process.exit(1);
 	});
+    }
 }
 
 axios.put(api + '/daemons', {
